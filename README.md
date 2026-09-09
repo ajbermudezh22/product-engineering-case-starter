@@ -141,4 +141,8 @@ it was supposed to prove) and fixes after I caught others (a dead-end
 reopen state, radio semantics with no keyboard behavior behind them).
 Nothing here shipped without being read line by line.
 
-**Part 2 diagram:** [Excalidraw link — TBD]
+## Part 2 — Listing Optimization Agent
+
+Done. Full write-up, requirements, flow, the design decisions I'd defend, evaluation plan, and what I'd ship first: [`docs/listing-optimization-agent.md`](docs/listing-optimization-agent.md).
+
+Diagram: [Excalidraw board](https://excalidraw.com/#json=wFVpSjvRmlwZiJ-H77ut0,XdZ9WevMuHs7-G2CkMjXJg) (live, editable) · [`docs/listing-optimization-agent.png`](docs/listing-optimization-agent.png) (static export, same content).
