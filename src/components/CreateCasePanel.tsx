@@ -3,7 +3,6 @@ import type { ReservationContext } from "../mockData";
 import type { CasePriority, CaseType, Classification } from "../caseTypes";
 
 type CreateCasePanelProps = {
-  open: boolean;
   reservation: ReservationContext;
   classification: Classification;
   caseType: CaseType;
@@ -25,8 +24,16 @@ const PRIORITY_OPTIONS: { value: CasePriority; label: string }[] = [
   { value: "low", label: "Low" },
 ];
 
+function caseTypeLabel(type: CaseType): string {
+  // Looked up from the same options the pills render, so the title prefill
+  // can never drift from what "Case type" actually shows as selected.
+  return CASE_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
+}
+
+// Parent mounts this component only while the panel is open (see App.tsx),
+// so every open is a fresh instance — local state below always starts clean,
+// including the access-code reveal toggle.
 export function CreateCasePanel({
-  open,
   reservation,
   classification,
   caseType,
@@ -35,23 +42,22 @@ export function CreateCasePanel({
   onCasePriorityChange,
   onClose,
 }: CreateCasePanelProps) {
-  const [title, setTitle] = useState(() => `Access issue — ${reservation.listingName}`);
-  const [description, setDescription] = useState(() => reservation.latestGuestMessage);
+  const [title, setTitle] = useState(
+    () => `${caseTypeLabel(classification.type)} — ${reservation.listingName}`
+  );
+  // Attributed as a quote rather than dropped in verbatim: this text is what
+  // travels with the case once it exists independently of this reservation
+  // page (no linked-message view is built in this prototype), so it needs to
+  // read as "the guest said this," not as the agent's own note.
+  const [description, setDescription] = useState(() => `Guest: "${reservation.latestGuestMessage}"`);
   const [accessCodeRevealed, setAccessCodeRevealed] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
 
-  // Panel never unmounts (it returns null instead — see the App.tsx note on
-  // why), so focus-in has to react to `open` flipping rather than to mount.
   useEffect(() => {
-    if (open) {
-      titleInputRef.current?.focus();
-    }
-  }, [open]);
+    titleInputRef.current?.focus();
+  }, []);
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         onClose();
@@ -59,11 +65,12 @@ export function CreateCasePanel({
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onClose]);
+  }, [onClose]);
 
-  if (!open) {
-    return null;
-  }
+  // The reasoning describes why the *original* suggestion was made — once the
+  // agent picks something else, showing it at full strength would read like
+  // it's still arguing for a value that's no longer selected.
+  const isOverridden = caseType !== classification.type || casePriority !== classification.priority;
 
   return (
     <aside className="casePanel" aria-label="Create case panel">
@@ -102,13 +109,12 @@ export function CreateCasePanel({
         />
 
         <span className="fieldLabel">Case type</span>
-        <div className="choiceRow" role="radiogroup" aria-label="Case type">
+        <div className="choiceRow" role="group" aria-label="Case type">
           {CASE_TYPE_OPTIONS.map((option) => (
             <button
               key={option.value}
               type="button"
-              role="radio"
-              aria-checked={caseType === option.value}
+              aria-pressed={caseType === option.value}
               className={caseType === option.value ? "choicePill choicePillActive" : "choicePill"}
               onClick={() => onCaseTypeChange(option.value)}
             >
@@ -118,13 +124,12 @@ export function CreateCasePanel({
         </div>
 
         <span className="fieldLabel">Priority</span>
-        <div className="choiceRow" role="radiogroup" aria-label="Priority">
+        <div className="choiceRow" role="group" aria-label="Priority">
           {PRIORITY_OPTIONS.map((option) => (
             <button
               key={option.value}
               type="button"
-              role="radio"
-              aria-checked={casePriority === option.value}
+              aria-pressed={casePriority === option.value}
               className={casePriority === option.value ? "choicePill choicePillActive" : "choicePill"}
               onClick={() => onCasePriorityChange(option.value)}
             >
@@ -133,8 +138,8 @@ export function CreateCasePanel({
           ))}
         </div>
 
-        <div className="suggestionNote">
-          <p className="suggestionNoteTitle">Why we suggest this</p>
+        <div className={isOverridden ? "suggestionNote suggestionNoteDimmed" : "suggestionNote"}>
+          <p className="suggestionNoteTitle">Why this was suggested</p>
           <ul>
             {classification.reasoning.map((line) => (
               <li key={line}>{line}</li>

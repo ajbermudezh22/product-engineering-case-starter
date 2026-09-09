@@ -18,16 +18,25 @@ export function App() {
   const [casePanelOpen, setCasePanelOpen] = useState(false);
   const addCaseButtonRef = useRef<HTMLButtonElement>(null);
 
-  function closeCasePanel() {
-    setCasePanelOpen(false);
-    addCaseButtonRef.current?.focus();
-  }
-
   // Computed once from static reservation data — the suggestion and its
   // reasoning don't change if the agent overrides type/priority below.
   const suggestedClassification = deriveClassification(reservationContext);
   const [caseType, setCaseType] = useState<CaseType>(suggestedClassification.type);
   const [casePriority, setCasePriority] = useState<CasePriority>(suggestedClassification.priority);
+
+  function openCasePanel() {
+    // Reset to the current suggestion on every open — caseType/casePriority
+    // live here in App state (not inside the panel), so unlike title/
+    // description they wouldn't otherwise clear themselves between sessions.
+    setCaseType(suggestedClassification.type);
+    setCasePriority(suggestedClassification.priority);
+    setCasePanelOpen(true);
+  }
+
+  function closeCasePanel() {
+    setCasePanelOpen(false);
+    addCaseButtonRef.current?.focus();
+  }
 
   return (
     <div className={casePanelOpen ? "appShell panelOpen" : "appShell"}>
@@ -61,7 +70,7 @@ export function App() {
               ref={addCaseButtonRef}
               className="primaryButton"
               type="button"
-              onClick={() => setCasePanelOpen(true)}
+              onClick={openCasePanel}
             >
               ＋ Add case
             </button>
@@ -122,16 +131,17 @@ export function App() {
         </div>
       </main>
 
-      <CreateCasePanel
-        open={casePanelOpen}
-        reservation={reservationContext}
-        classification={suggestedClassification}
-        caseType={caseType}
-        casePriority={casePriority}
-        onCaseTypeChange={setCaseType}
-        onCasePriorityChange={setCasePriority}
-        onClose={closeCasePanel}
-      />
+      {casePanelOpen && (
+        <CreateCasePanel
+          reservation={reservationContext}
+          classification={suggestedClassification}
+          caseType={caseType}
+          casePriority={casePriority}
+          onCaseTypeChange={setCaseType}
+          onCasePriorityChange={setCasePriority}
+          onClose={closeCasePanel}
+        />
+      )}
     </div>
   );
 }

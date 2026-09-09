@@ -402,6 +402,10 @@ h2 {
   font-size: 13px;
 }
 
+.suggestionNoteDimmed {
+  opacity: 0.55;
+}
+
 .accessCodeRow {
   display: flex;
   align-items: center;
