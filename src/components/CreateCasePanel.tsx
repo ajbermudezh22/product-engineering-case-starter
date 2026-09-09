@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReservationContext } from "../mockData";
 import type { Case, CasePriority, CaseType, Classification } from "../caseTypes";
-import { CASE_TYPE_OPTIONS, PRIORITY_OPTIONS, caseTypeLabel, isHighUrgency, priorityLabel } from "../caseTypes";
+import { CASE_TYPE_OPTIONS, PRIORITY_OPTIONS, caseTypeLabel } from "../caseTypes";
 import type { ActionPlanState } from "../hooks/useActionPlan";
+import { ActionPlanStatus } from "./ActionPlanStatus";
+import { CaseSummary } from "./CaseSummary";
 
 type CreateCasePanelProps = {
   reservation: ReservationContext;
@@ -16,44 +18,6 @@ type CreateCasePanelProps = {
   onCreate: (details: { title: string; description: string }) => void;
   onClose: () => void;
 };
-
-// Shared by the form view and the success view — both need to show the same
-// action-plan status, which is exactly the second use case that justifies
-// pulling it out instead of duplicating the three branches in each.
-function renderActionPlanStatus(actionPlan: ActionPlanState) {
-  // idle and loading render the same on purpose, not an unhandled case: idle
-  // only ever lasts one render — App re-renders with enabled=true a render
-  // before its effect flips state to loading, regardless of what feeds
-  // `enabled`, so this holds for both casePanelOpen and casePanelOpen ||
-  // createdCase !== null.
-  if (actionPlan.status === "idle" || actionPlan.status === "loading") {
-    return (
-      <>
-        <p className="actionPlanStatus">Generating suggested actions…</p>
-        {/* Skeleton rows, not just the status line: a single sentence in a
-            420px column leaves most of the panel blank for the real ~14s
-            delay, which reads as "nothing is happening" rather than "the
-            case is already done, this part is extra." aria-hidden since the
-            status line above already says the same thing to a screen reader. */}
-        <ul className="actionPlanList actionPlanSkeleton" aria-hidden="true">
-          <li className="skeletonRow" />
-          <li className="skeletonRow skeletonRowShort" />
-          <li className="skeletonRow skeletonRowShorter" />
-        </ul>
-      </>
-    );
-  }
-  if (actionPlan.status === "error") {
-    return <p className="actionPlanStatus">Couldn't generate suggested actions.</p>;
-  }
-  return (
-    <ul className="actionPlanList">
-      {actionPlan.items.map((item) => (
-        <li key={item.id}>{item.label}</li>
-      ))}
-    </ul>
-  );
-}
 
 // Parent mounts this component only while the panel is open (see App.tsx),
 // so every open is a fresh instance — local state below always starts clean,
@@ -145,20 +109,14 @@ export function CreateCasePanel({
               lists "loading" (5) before "success" (6); this renders success
               immediately and the action plan can still be "Generating…"
               right below it — creation never waits on generation. */}
-          <div className="titleRow">
-            <h2>{createdCase.title}</h2>
-            <span className="pill success">{caseTypeLabel(createdCase.type)}</span>
-            <span className={isHighUrgency(createdCase.priority) ? "pill danger" : "pill success"}>
-              {priorityLabel(createdCase.priority)}
-            </span>
-          </div>
+          <CaseSummary record={createdCase} />
 
           <p className="successGuarantee">
             Case created. You can close this panel — suggested actions will attach when they're ready.
           </p>
 
           <span className="fieldLabel">Suggested actions</span>
-          {renderActionPlanStatus(actionPlan)}
+          <ActionPlanStatus actionPlan={actionPlan} />
         </div>
       ) : (
         <>
@@ -242,7 +200,7 @@ export function CreateCasePanel({
             <p className="accessCodeHint">Masked by default. Never written into the title or description.</p>
 
             <span className="fieldLabel">Suggested actions</span>
-            {renderActionPlanStatus(actionPlan)}
+            <ActionPlanStatus actionPlan={actionPlan} />
           </div>
 
           {/* Real third grid row (.casePanel is grid-template-rows: auto 1fr

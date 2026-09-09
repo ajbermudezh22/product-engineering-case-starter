@@ -1,11 +1,12 @@
 import { useRef, useState } from "react";
 import { Card } from "./components/Card";
 import { CreateCasePanel } from "./components/CreateCasePanel";
+import { CaseDetailPanel } from "./components/CaseDetailPanel";
 import { reservationContext } from "./mockData";
 import { deriveClassification } from "./classifyCase";
 import { useActionPlan } from "./hooks/useActionPlan";
 import type { ActionPlanState } from "./hooks/useActionPlan";
-import { caseTypeLabel, isHighUrgency, priorityLabel } from "./caseTypes";
+import { caseTypeLabel, formatCreatedAt, isHighUrgency, priorityLabel } from "./caseTypes";
 import type { Case, CasePriority, CaseType } from "./caseTypes";
 
 function actionPlanSummary(actionPlan: ActionPlanState): string {
@@ -31,6 +32,23 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 export function App() {
   const [casePanelOpen, setCasePanelOpen] = useState(false);
   const addCaseButtonRef = useRef<HTMLButtonElement>(null);
+
+  // The create panel and the detail panel share the one 420px grid column
+  // .appShell.panelOpen provides — there's no room for both, so opening one
+  // explicitly closes the other rather than leaving two possibly-open flags
+  // and hoping only one ever renders.
+  const [caseDetailOpen, setCaseDetailOpen] = useState(false);
+  const viewDetailsButtonRef = useRef<HTMLButtonElement>(null);
+
+  function openCaseDetail() {
+    setCaseDetailOpen(true);
+    setCasePanelOpen(false);
+  }
+
+  function closeCaseDetail() {
+    setCaseDetailOpen(false);
+    viewDetailsButtonRef.current?.focus();
+  }
 
   // Computed once from static reservation data — the suggestion and its
   // reasoning don't change if the agent overrides type/priority below.
@@ -64,6 +82,7 @@ export function App() {
     setCaseType(suggestedClassification.type);
     setCasePriority(suggestedClassification.priority);
     setCasePanelOpen(true);
+    setCaseDetailOpen(false);
   }
 
   function closeCasePanel() {
@@ -83,8 +102,10 @@ export function App() {
     enabled: casePanelOpen || createdCase !== null,
   });
 
+  const sidePanelOpen = casePanelOpen || caseDetailOpen;
+
   return (
-    <div className={casePanelOpen ? "appShell panelOpen" : "appShell"}>
+    <div className={sidePanelOpen ? "appShell panelOpen" : "appShell"}>
       <aside className="leftRail" aria-label="Main navigation wireframe">
         <div className="brandMark">A</div>
         <nav>
@@ -179,7 +200,17 @@ export function App() {
                       {priorityLabel(createdCase.priority)}
                     </span>
                   </div>
-                  <p className="metaLine">{actionPlanSummary(actionPlan)}</p>
+                  <p className="metaLine">
+                    Created {formatCreatedAt(createdCase.createdAt)} · {actionPlanSummary(actionPlan)}
+                  </p>
+                  <button
+                    ref={viewDetailsButtonRef}
+                    type="button"
+                    className="linkButton"
+                    onClick={openCaseDetail}
+                  >
+                    View details
+                  </button>
                 </>
               ) : (
                 <p className="emptyState">No open cases for this reservation.</p>
@@ -202,6 +233,10 @@ export function App() {
           onCreate={createCase}
           onClose={closeCasePanel}
         />
+      )}
+
+      {caseDetailOpen && createdCase && (
+        <CaseDetailPanel record={createdCase} actionPlan={actionPlan} onClose={closeCaseDetail} />
       )}
     </div>
   );

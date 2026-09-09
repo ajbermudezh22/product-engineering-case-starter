@@ -57,3 +57,10 @@ export function priorityLabel(priority: CasePriority): string {
 export function isHighUrgency(priority: CasePriority): boolean {
   return priority === "urgent" || priority === "high";
 }
+
+export function formatCreatedAt(iso: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(iso));
+}
