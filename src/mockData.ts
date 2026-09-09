@@ -16,7 +16,9 @@ export type ReservationContext = {
   smartLockBatteryPercent: number;
   latestGuestMessage: string;
   recentMessageCount: number;
+  recentMessageWindowMinutes: number;
   similarIssueNote: string;
+  accessCode: string;
 };
 
 export const reservationContext: ReservationContext = {
@@ -37,5 +39,9 @@ export const reservationContext: ReservationContext = {
   smartLockBatteryPercent: 18,
   latestGuestMessage: "The door code does not work and I am standing outside.",
   recentMessageCount: 4,
+  recentMessageWindowMinutes: 8,
   similarIssueNote: "A similar access issue was reported for this listing 3 days ago.",
+  // Mocked only so the create-case flow has a real value to mask by default and
+  // reveal on explicit request — never written into a case's title/description.
+  accessCode: "4821",
 };

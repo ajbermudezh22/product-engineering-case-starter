@@ -75,7 +75,10 @@ export function App() {
               <InfoRow label="Access method" value={reservationContext.accessMethod} />
               <InfoRow label="Backup access" value={reservationContext.backupAccessAvailable ? "Available" : "Not available"} />
               <InfoRow label="Smart lock battery" value={`${reservationContext.smartLockBatteryPercent}%`} />
-              <InfoRow label="Recent messages" value={`${reservationContext.recentMessageCount} in 8 minutes`} />
+              <InfoRow
+                label="Recent messages"
+                value={`${reservationContext.recentMessageCount} in ${reservationContext.recentMessageWindowMinutes} minutes`}
+              />
               <div className="attentionNote">{reservationContext.similarIssueNote}</div>
             </Card>
           </div>
