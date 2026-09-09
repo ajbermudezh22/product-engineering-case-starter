@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReservationContext } from "../mockData";
 import type { CasePriority, CaseType, Classification } from "../caseTypes";
 
@@ -38,6 +38,28 @@ export function CreateCasePanel({
   const [title, setTitle] = useState(() => `Access issue — ${reservation.listingName}`);
   const [description, setDescription] = useState(() => reservation.latestGuestMessage);
   const [accessCodeRevealed, setAccessCodeRevealed] = useState(false);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Panel never unmounts (it returns null instead — see the App.tsx note on
+  // why), so focus-in has to react to `open` flipping rather than to mount.
+  useEffect(() => {
+    if (open) {
+      titleInputRef.current?.focus();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
 
   if (!open) {
     return null;
@@ -61,6 +83,7 @@ export function CreateCasePanel({
         </label>
         <input
           id="caseTitle"
+          ref={titleInputRef}
           className="textInput"
           type="text"
           value={title}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Card } from "./components/Card";
 import { CreateCasePanel } from "./components/CreateCasePanel";
 import { reservationContext } from "./mockData";
@@ -16,6 +16,12 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 export function App() {
   const [casePanelOpen, setCasePanelOpen] = useState(false);
+  const addCaseButtonRef = useRef<HTMLButtonElement>(null);
+
+  function closeCasePanel() {
+    setCasePanelOpen(false);
+    addCaseButtonRef.current?.focus();
+  }
 
   // Computed once from static reservation data — the suggestion and its
   // reasoning don't change if the agent overrides type/priority below.
@@ -51,7 +57,12 @@ export function App() {
             </p>
           </div>
           <div className="topActions">
-            <button className="primaryButton" type="button" onClick={() => setCasePanelOpen(true)}>
+            <button
+              ref={addCaseButtonRef}
+              className="primaryButton"
+              type="button"
+              onClick={() => setCasePanelOpen(true)}
+            >
               ＋ Add case
             </button>
             <button className="secondaryButton" type="button">Unit</button>
@@ -119,7 +130,7 @@ export function App() {
         casePriority={casePriority}
         onCaseTypeChange={setCaseType}
         onCasePriorityChange={setCasePriority}
-        onClose={() => setCasePanelOpen(false)}
+        onClose={closeCasePanel}
       />
     </div>
   );
