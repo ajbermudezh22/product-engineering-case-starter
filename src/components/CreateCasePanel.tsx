@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReservationContext } from "../mockData";
 import type { CasePriority, CaseType, Classification } from "../caseTypes";
+import { useActionPlan } from "../hooks/useActionPlan";
 
 type CreateCasePanelProps = {
   reservation: ReservationContext;
@@ -56,6 +57,15 @@ export function CreateCasePanel({
   const [description, setDescription] = useState(() => `Guest: "${reservation.latestGuestMessage}"`);
   const [accessCodeRevealed, setAccessCodeRevealed] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
+
+  // Starts the moment this component mounts, i.e. the moment the panel
+  // opens — not on submit. Debounces and re-requests on its own if caseType/
+  // casePriority change later; nothing here waits for case creation.
+  const actionPlan = useActionPlan({
+    reservationId: reservation.reservationId,
+    caseType,
+    casePriority,
+  });
 
   useEffect(() => {
     titleInputRef.current?.focus();
@@ -172,6 +182,17 @@ export function CreateCasePanel({
           </button>
         </div>
         <p className="accessCodeHint">Masked by default. Never written into the title or description.</p>
+
+        <span className="fieldLabel">Suggested actions</span>
+        {actionPlan.status === "loading" ? (
+          <p className="actionPlanStatus">Generating suggested actions…</p>
+        ) : (
+          <ul className="actionPlanList">
+            {actionPlan.items.map((item) => (
+              <li key={item.id}>{item.label}</li>
+            ))}
+          </ul>
+        )}
       </div>
     </aside>
   );
