@@ -433,6 +433,51 @@ h2 {
   text-align: center;
 }
 
+.successGuarantee {
+  margin: 4px 0 0;
+  line-height: 1.5;
+  color: #4b4f46;
+}
+
+.actionPlanSkeleton {
+  list-style: none;
+  padding-left: 0;
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.skeletonRow {
+  height: 14px;
+  border-radius: 6px;
+  background: #ece8df;
+  animation: actionPlanSkeletonPulse 1.4s ease-in-out infinite;
+}
+
+.skeletonRowShort {
+  width: 80%;
+}
+
+.skeletonRowShorter {
+  width: 60%;
+}
+
+@keyframes actionPlanSkeletonPulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonRow {
+    animation: none;
+  }
+}
+
 .accessCodeRow {
   display: flex;
   align-items: center;
