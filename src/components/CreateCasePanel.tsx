@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReservationContext } from "../mockData";
 import type { CasePriority, CaseType, Classification } from "../caseTypes";
-import { useActionPlan } from "../hooks/useActionPlan";
+import type { ActionPlanState } from "../hooks/useActionPlan";
 
 type CreateCasePanelProps = {
   reservation: ReservationContext;
@@ -10,6 +10,7 @@ type CreateCasePanelProps = {
   casePriority: CasePriority;
   onCaseTypeChange: (type: CaseType) => void;
   onCasePriorityChange: (priority: CasePriority) => void;
+  actionPlan: ActionPlanState;
   onClose: () => void;
 };
 
@@ -41,6 +42,7 @@ export function CreateCasePanel({
   casePriority,
   onCaseTypeChange,
   onCasePriorityChange,
+  actionPlan,
   onClose,
 }: CreateCasePanelProps) {
   // Tracks the live case-type pill, not the frozen suggestion — otherwise
@@ -57,15 +59,6 @@ export function CreateCasePanel({
   const [description, setDescription] = useState(() => `Guest: "${reservation.latestGuestMessage}"`);
   const [accessCodeRevealed, setAccessCodeRevealed] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-
-  // Starts the moment this component mounts, i.e. the moment the panel
-  // opens — not on submit. Debounces and re-requests on its own if caseType/
-  // casePriority change later; nothing here waits for case creation.
-  const actionPlan = useActionPlan({
-    reservationId: reservation.reservationId,
-    caseType,
-    casePriority,
-  });
 
   useEffect(() => {
     titleInputRef.current?.focus();
@@ -184,9 +177,13 @@ export function CreateCasePanel({
         <p className="accessCodeHint">Masked by default. Never written into the title or description.</p>
 
         <span className="fieldLabel">Suggested actions</span>
-        {actionPlan.status === "loading" ? (
+        {(actionPlan.status === "idle" || actionPlan.status === "loading") && (
           <p className="actionPlanStatus">Generating suggested actions…</p>
-        ) : (
+        )}
+        {actionPlan.status === "error" && (
+          <p className="actionPlanStatus">Couldn't generate suggested actions.</p>
+        )}
+        {actionPlan.status === "ready" && (
           <ul className="actionPlanList">
             {actionPlan.items.map((item) => (
               <li key={item.id}>{item.label}</li>

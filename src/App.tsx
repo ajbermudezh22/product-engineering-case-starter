@@ -3,6 +3,7 @@ import { Card } from "./components/Card";
 import { CreateCasePanel } from "./components/CreateCasePanel";
 import { reservationContext } from "./mockData";
 import { deriveClassification } from "./classifyCase";
+import { useActionPlan } from "./hooks/useActionPlan";
 import type { CasePriority, CaseType } from "./caseTypes";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
@@ -37,6 +38,20 @@ export function App() {
     setCasePanelOpen(false);
     addCaseButtonRef.current?.focus();
   }
+
+  // Lives here, not in the panel: the panel unmounts on close, and once a
+  // case can exist independently of the panel (next step), its action plan
+  // has to keep generating after the agent closes it.
+  const actionPlan = useActionPlan({
+    reservationId: reservationContext.reservationId,
+    caseType,
+    casePriority,
+    // Not just casePanelOpen forever — once case creation exists, a created
+    // case needs generation to keep running after the panel closes. This
+    // becomes `casePanelOpen || caseCreated` at that point; there's no
+    // caseCreated state yet to OR in, so it's left honest for now.
+    enabled: casePanelOpen,
+  });
 
   return (
     <div className={casePanelOpen ? "appShell panelOpen" : "appShell"}>
@@ -139,6 +154,7 @@ export function App() {
           casePriority={casePriority}
           onCaseTypeChange={setCaseType}
           onCasePriorityChange={setCasePriority}
+          actionPlan={actionPlan}
           onClose={closeCasePanel}
         />
       )}
