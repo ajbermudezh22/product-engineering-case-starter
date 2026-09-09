@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReservationContext } from "../mockData";
-import type { CasePriority, CaseType, Classification } from "../caseTypes";
+import type { Case, CasePriority, CaseType, Classification } from "../caseTypes";
 import type { ActionPlanState } from "../hooks/useActionPlan";
 
 type CreateCasePanelProps = {
@@ -11,6 +11,8 @@ type CreateCasePanelProps = {
   onCaseTypeChange: (type: CaseType) => void;
   onCasePriorityChange: (priority: CasePriority) => void;
   actionPlan: ActionPlanState;
+  createdCase: Case | null;
+  onCreate: (details: { title: string; description: string }) => void;
   onClose: () => void;
 };
 
@@ -43,6 +45,8 @@ export function CreateCasePanel({
   onCaseTypeChange,
   onCasePriorityChange,
   actionPlan,
+  createdCase,
+  onCreate,
   onClose,
 }: CreateCasePanelProps) {
   // Tracks the live case-type pill, not the frozen suggestion — otherwise
@@ -97,100 +101,118 @@ export function CreateCasePanel({
         </button>
       </div>
 
-      <div className="caseForm">
-        <label className="fieldLabel" htmlFor="caseTitle">
-          Title
-        </label>
-        <input
-          id="caseTitle"
-          ref={titleInputRef}
-          className="textInput"
-          type="text"
-          value={title}
-          onChange={(event) => {
-            setTitle(event.target.value);
-            setTitleTouched(true);
-          }}
-        />
-
-        <label className="fieldLabel" htmlFor="caseDescription">
-          Description
-        </label>
-        <textarea
-          id="caseDescription"
-          className="textArea"
-          rows={4}
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-        />
-
-        <span className="fieldLabel">Case type</span>
-        <div className="choiceRow" role="group" aria-label="Case type">
-          {CASE_TYPE_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              aria-pressed={caseType === option.value}
-              className={caseType === option.value ? "choicePill choicePillActive" : "choicePill"}
-              onClick={() => onCaseTypeChange(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
+      {createdCase ? (
+        <div className="caseForm">
+          {/* Placeholder on purpose — step 11 replaces this with the real
+              success view (case summary + the live action plan attached to
+              it). This just proves creation doesn't wait on generation. */}
+          <p className="placeholderBlock">Case created.</p>
         </div>
+      ) : (
+        <div className="caseForm">
+          <label className="fieldLabel" htmlFor="caseTitle">
+            Title
+          </label>
+          <input
+            id="caseTitle"
+            ref={titleInputRef}
+            className="textInput"
+            type="text"
+            value={title}
+            onChange={(event) => {
+              setTitle(event.target.value);
+              setTitleTouched(true);
+            }}
+          />
 
-        <span className="fieldLabel">Priority</span>
-        <div className="choiceRow" role="group" aria-label="Priority">
-          {PRIORITY_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              aria-pressed={casePriority === option.value}
-              className={casePriority === option.value ? "choicePill choicePillActive" : "choicePill"}
-              onClick={() => onCasePriorityChange(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+          <label className="fieldLabel" htmlFor="caseDescription">
+            Description
+          </label>
+          <textarea
+            id="caseDescription"
+            className="textArea"
+            rows={4}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+          />
 
-        <div className={isOverridden ? "suggestionNote suggestionNoteDimmed" : "suggestionNote"}>
-          <p className="suggestionNoteTitle">Why this was suggested</p>
-          <ul>
-            {classification.reasoning.map((line) => (
-              <li key={line}>{line}</li>
+          <span className="fieldLabel">Case type</span>
+          <div className="choiceRow" role="group" aria-label="Case type">
+            {CASE_TYPE_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={caseType === option.value}
+                className={caseType === option.value ? "choicePill choicePillActive" : "choicePill"}
+                onClick={() => onCaseTypeChange(option.value)}
+              >
+                {option.label}
+              </button>
             ))}
-          </ul>
-        </div>
+          </div>
 
-        <span className="fieldLabel">Access code</span>
-        <div className="accessCodeRow">
-          <code className="accessCodeValue">{accessCodeRevealed ? reservation.accessCode : "••••"}</code>
-          <button
-            type="button"
-            className="linkButton"
-            onClick={() => setAccessCodeRevealed((revealed) => !revealed)}
-          >
-            {accessCodeRevealed ? "Hide" : "Reveal"}
+          <span className="fieldLabel">Priority</span>
+          <div className="choiceRow" role="group" aria-label="Priority">
+            {PRIORITY_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={casePriority === option.value}
+                className={casePriority === option.value ? "choicePill choicePillActive" : "choicePill"}
+                onClick={() => onCasePriorityChange(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+
+          <div className={isOverridden ? "suggestionNote suggestionNoteDimmed" : "suggestionNote"}>
+            <p className="suggestionNoteTitle">Why this was suggested</p>
+            <ul>
+              {classification.reasoning.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </div>
+
+          <span className="fieldLabel">Access code</span>
+          <div className="accessCodeRow">
+            <code className="accessCodeValue">{accessCodeRevealed ? reservation.accessCode : "••••"}</code>
+            <button
+              type="button"
+              className="linkButton"
+              onClick={() => setAccessCodeRevealed((revealed) => !revealed)}
+            >
+              {accessCodeRevealed ? "Hide" : "Reveal"}
+            </button>
+          </div>
+          <p className="accessCodeHint">Masked by default. Never written into the title or description.</p>
+
+          <span className="fieldLabel">Suggested actions</span>
+          {/* idle and loading render the same on purpose, not an unhandled
+              case: idle only ever lasts one render — App re-renders with
+              enabled=true a render before its effect flips state to loading,
+              regardless of what feeds `enabled`, so this holds even once it
+              becomes casePanelOpen || caseCreated. */}
+          {(actionPlan.status === "idle" || actionPlan.status === "loading") && (
+            <p className="actionPlanStatus">Generating suggested actions…</p>
+          )}
+          {actionPlan.status === "error" && (
+            <p className="actionPlanStatus">Couldn't generate suggested actions.</p>
+          )}
+          {actionPlan.status === "ready" && (
+            <ul className="actionPlanList">
+              {actionPlan.items.map((item) => (
+                <li key={item.id}>{item.label}</li>
+              ))}
+            </ul>
+          )}
+
+          <button type="button" className="primaryButton" onClick={() => onCreate({ title, description })}>
+            Create case
           </button>
         </div>
-        <p className="accessCodeHint">Masked by default. Never written into the title or description.</p>
-
-        <span className="fieldLabel">Suggested actions</span>
-        {(actionPlan.status === "idle" || actionPlan.status === "loading") && (
-          <p className="actionPlanStatus">Generating suggested actions…</p>
-        )}
-        {actionPlan.status === "error" && (
-          <p className="actionPlanStatus">Couldn't generate suggested actions.</p>
-        )}
-        {actionPlan.status === "ready" && (
-          <ul className="actionPlanList">
-            {actionPlan.items.map((item) => (
-              <li key={item.id}>{item.label}</li>
-            ))}
-          </ul>
-        )}
-      </div>
+      )}
     </aside>
   );
 }

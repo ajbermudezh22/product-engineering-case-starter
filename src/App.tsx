@@ -4,7 +4,7 @@ import { CreateCasePanel } from "./components/CreateCasePanel";
 import { reservationContext } from "./mockData";
 import { deriveClassification } from "./classifyCase";
 import { useActionPlan } from "./hooks/useActionPlan";
-import type { CasePriority, CaseType } from "./caseTypes";
+import type { Case, CasePriority, CaseType } from "./caseTypes";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -24,6 +24,25 @@ export function App() {
   const suggestedClassification = deriveClassification(reservationContext);
   const [caseType, setCaseType] = useState<CaseType>(suggestedClassification.type);
   const [casePriority, setCasePriority] = useState<CasePriority>(suggestedClassification.priority);
+
+  // Singular, not a list: there's exactly one useActionPlan slot below, so a
+  // second case would need its own independent action-plan tracking (a map
+  // keyed by case id) to avoid the second draft's key silently overwriting
+  // the first case's plan. Out of scope here — the brief is one urgent
+  // access issue, one case. Named as a limit, not left implicit.
+  const [createdCase, setCreatedCase] = useState<Case | null>(null);
+
+  function createCase({ title, description }: { title: string; description: string }) {
+    setCreatedCase({
+      id: crypto.randomUUID(),
+      reservationId: reservationContext.reservationId,
+      title,
+      description,
+      type: caseType,
+      priority: casePriority,
+      createdAt: new Date().toISOString(),
+    });
+  }
 
   function openCasePanel() {
     // Reset to the current suggestion on every open — caseType/casePriority
@@ -46,11 +65,9 @@ export function App() {
     reservationId: reservationContext.reservationId,
     caseType,
     casePriority,
-    // Not just casePanelOpen forever — once case creation exists, a created
-    // case needs generation to keep running after the panel closes. This
-    // becomes `casePanelOpen || caseCreated` at that point; there's no
-    // caseCreated state yet to OR in, so it's left honest for now.
-    enabled: casePanelOpen,
+    // Stays enabled once a case exists even after the panel closes — that's
+    // the whole point of decoupling creation from generation.
+    enabled: casePanelOpen || createdCase !== null,
   });
 
   return (
@@ -155,6 +172,8 @@ export function App() {
           onCaseTypeChange={setCaseType}
           onCasePriorityChange={setCasePriority}
           actionPlan={actionPlan}
+          createdCase={createdCase}
+          onCreate={createCase}
           onClose={closeCasePanel}
         />
       )}
