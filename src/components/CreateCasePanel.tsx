@@ -34,6 +34,34 @@ function caseTypeLabel(type: CaseType): string {
   return CASE_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
 }
 
+function priorityLabel(priority: CasePriority): string {
+  return PRIORITY_OPTIONS.find((option) => option.value === priority)?.label ?? priority;
+}
+
+// Shared by the form view and the success view — both need to show the same
+// action-plan status, which is exactly the second use case that justifies
+// pulling it out instead of duplicating the three branches in each.
+function renderActionPlanStatus(actionPlan: ActionPlanState) {
+  // idle and loading render the same on purpose, not an unhandled case: idle
+  // only ever lasts one render — App re-renders with enabled=true a render
+  // before its effect flips state to loading, regardless of what feeds
+  // `enabled`, so this holds for both casePanelOpen and casePanelOpen ||
+  // createdCase !== null.
+  if (actionPlan.status === "idle" || actionPlan.status === "loading") {
+    return <p className="actionPlanStatus">Generating suggested actions…</p>;
+  }
+  if (actionPlan.status === "error") {
+    return <p className="actionPlanStatus">Couldn't generate suggested actions.</p>;
+  }
+  return (
+    <ul className="actionPlanList">
+      {actionPlan.items.map((item) => (
+        <li key={item.id}>{item.label}</li>
+      ))}
+    </ul>
+  );
+}
+
 // Parent mounts this component only while the panel is open (see App.tsx),
 // so every open is a fresh instance — local state below always starts clean,
 // including the access-code reveal toggle.
@@ -110,7 +138,7 @@ export function CreateCasePanel({
     <aside className="casePanel" aria-label="Create case panel">
       <div className="casePanelHeader">
         <div>
-          <p className="eyebrow">Create case</p>
+          <p className="eyebrow">{justCreated ? "Case created" : "Create case"}</p>
           <h2>{reservation.guestName}</h2>
         </div>
         <button className="iconButton" type="button" onClick={onClose} aria-label="Close create case panel">
@@ -120,10 +148,26 @@ export function CreateCasePanel({
 
       {justCreated && createdCase ? (
         <div className="caseForm">
-          {/* Placeholder on purpose — step 11 replaces this with the real
-              success view (case summary + the live action plan attached to
-              it). This just proves creation doesn't wait on generation. */}
-          <p className="placeholderBlock">Case created.</p>
+          {/* State-order inversion, documented in DECISIONS.md: the brief
+              lists "loading" (5) before "success" (6); this renders success
+              immediately and the action plan can still be "Generating…"
+              right below it — creation never waits on generation. */}
+          <div className="titleRow">
+            <h2>{createdCase.title}</h2>
+            <span className="pill success">{caseTypeLabel(createdCase.type)}</span>
+            <span
+              className={
+                createdCase.priority === "urgent" || createdCase.priority === "high"
+                  ? "pill danger"
+                  : "pill success"
+              }
+            >
+              {priorityLabel(createdCase.priority)}
+            </span>
+          </div>
+
+          <span className="fieldLabel">Suggested actions</span>
+          {renderActionPlanStatus(actionPlan)}
         </div>
       ) : (
         <>
@@ -207,24 +251,7 @@ export function CreateCasePanel({
             <p className="accessCodeHint">Masked by default. Never written into the title or description.</p>
 
             <span className="fieldLabel">Suggested actions</span>
-            {/* idle and loading render the same on purpose, not an unhandled
-                case: idle only ever lasts one render — App re-renders with
-                enabled=true a render before its effect flips state to
-                loading, regardless of what feeds `enabled`, so this holds
-                even once it becomes casePanelOpen || caseCreated. */}
-            {(actionPlan.status === "idle" || actionPlan.status === "loading") && (
-              <p className="actionPlanStatus">Generating suggested actions…</p>
-            )}
-            {actionPlan.status === "error" && (
-              <p className="actionPlanStatus">Couldn't generate suggested actions.</p>
-            )}
-            {actionPlan.status === "ready" && (
-              <ul className="actionPlanList">
-                {actionPlan.items.map((item) => (
-                  <li key={item.id}>{item.label}</li>
-                ))}
-              </ul>
-            )}
+            {renderActionPlanStatus(actionPlan)}
           </div>
 
           {/* Real third grid row (.casePanel is grid-template-rows: auto 1fr

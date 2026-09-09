@@ -34,3 +34,14 @@ in App, it does not add a second one. Because `reservationId`/`caseType`/
 `title`/`description` — the action plan itself doesn't restart, since its key
 is unchanged. No confirmation or guard against this exists; it's a named
 scope cut, not an oversight.
+
+## Success renders before the action plan finishes (src/components/CreateCasePanel.tsx)
+
+The brief's required-states list orders "loading state while actions
+generate" (5) before "success state after creation" (6), reading as if
+actions finish first. This build inverts that on purpose: the success view
+renders as soon as `createdCase` exists, and `actionPlan.status` can still
+be `"loading"` right there inside it — case creation never waits on
+generation (see the classification/action-plan split above). Both required
+states still exist, just not in that sequence, and that's the actual
+product bet, not an accident of build order.
