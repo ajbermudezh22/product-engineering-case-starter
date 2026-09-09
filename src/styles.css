@@ -401,3 +401,35 @@ h2 {
   line-height: 1.6;
   font-size: 13px;
 }
+
+.accessCodeRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.accessCodeValue {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: #f7f6f2;
+  border-radius: 10px;
+  padding: 6px 12px;
+}
+
+.linkButton {
+  border: none;
+  background: none;
+  padding: 0;
+  color: #171a20;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.accessCodeHint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #6b6d66;
+}

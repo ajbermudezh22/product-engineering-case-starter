@@ -37,6 +37,7 @@ export function CreateCasePanel({
 }: CreateCasePanelProps) {
   const [title, setTitle] = useState(() => `Access issue — ${reservation.listingName}`);
   const [description, setDescription] = useState(() => reservation.latestGuestMessage);
+  const [accessCodeRevealed, setAccessCodeRevealed] = useState(false);
 
   if (!open) {
     return null;
@@ -117,6 +118,19 @@ export function CreateCasePanel({
             ))}
           </ul>
         </div>
+
+        <span className="fieldLabel">Access code</span>
+        <div className="accessCodeRow">
+          <code className="accessCodeValue">{accessCodeRevealed ? reservation.accessCode : "••••"}</code>
+          <button
+            type="button"
+            className="linkButton"
+            onClick={() => setAccessCodeRevealed((revealed) => !revealed)}
+          >
+            {accessCodeRevealed ? "Hide" : "Reveal"}
+          </button>
+        </div>
+        <p className="accessCodeHint">Masked by default. Never written into the title or description.</p>
       </div>
     </aside>
   );
