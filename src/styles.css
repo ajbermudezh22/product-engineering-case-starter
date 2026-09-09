@@ -351,3 +351,53 @@ h2 {
   outline: 2px solid #171a20;
   outline-offset: 1px;
 }
+
+.choiceRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choicePill {
+  border: 1px solid #d8d2c7;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #fffefb;
+  color: #4b4f46;
+  cursor: pointer;
+}
+
+.choicePillActive {
+  background: #171a20;
+  border-color: #171a20;
+  color: #fffefb;
+}
+
+.choicePill:focus-visible {
+  outline: 2px solid #171a20;
+  outline-offset: 1px;
+}
+
+.suggestionNote {
+  margin-top: 12px;
+  border-radius: 18px;
+  background: #f7f6f2;
+  padding: 14px 16px;
+  color: #4b4f46;
+}
+
+.suggestionNoteTitle {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #171a20;
+}
+
+.suggestionNote ul {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.6;
+  font-size: 13px;
+}

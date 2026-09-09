@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Card } from "./components/Card";
 import { CreateCasePanel } from "./components/CreateCasePanel";
 import { reservationContext } from "./mockData";
+import { deriveClassification } from "./classifyCase";
+import type { CasePriority, CaseType } from "./caseTypes";
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -14,6 +16,12 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 export function App() {
   const [casePanelOpen, setCasePanelOpen] = useState(false);
+
+  // Computed once from static reservation data — the suggestion and its
+  // reasoning don't change if the agent overrides type/priority below.
+  const suggestedClassification = deriveClassification(reservationContext);
+  const [caseType, setCaseType] = useState<CaseType>(suggestedClassification.type);
+  const [casePriority, setCasePriority] = useState<CasePriority>(suggestedClassification.priority);
 
   return (
     <div className={casePanelOpen ? "appShell panelOpen" : "appShell"}>
@@ -106,6 +114,11 @@ export function App() {
       <CreateCasePanel
         open={casePanelOpen}
         reservation={reservationContext}
+        classification={suggestedClassification}
+        caseType={caseType}
+        casePriority={casePriority}
+        onCaseTypeChange={setCaseType}
+        onCasePriorityChange={setCasePriority}
         onClose={() => setCasePanelOpen(false)}
       />
     </div>

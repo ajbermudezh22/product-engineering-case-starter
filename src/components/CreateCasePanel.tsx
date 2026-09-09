@@ -1,13 +1,40 @@
 import { useState } from "react";
 import type { ReservationContext } from "../mockData";
+import type { CasePriority, CaseType, Classification } from "../caseTypes";
 
 type CreateCasePanelProps = {
   open: boolean;
   reservation: ReservationContext;
+  classification: Classification;
+  caseType: CaseType;
+  casePriority: CasePriority;
+  onCaseTypeChange: (type: CaseType) => void;
+  onCasePriorityChange: (priority: CasePriority) => void;
   onClose: () => void;
 };
 
-export function CreateCasePanel({ open, reservation, onClose }: CreateCasePanelProps) {
+const CASE_TYPE_OPTIONS: { value: CaseType; label: string }[] = [
+  { value: "access_issue", label: "Access issue" },
+  { value: "general_issue", label: "General issue" },
+];
+
+const PRIORITY_OPTIONS: { value: CasePriority; label: string }[] = [
+  { value: "urgent", label: "Urgent" },
+  { value: "high", label: "High" },
+  { value: "medium", label: "Medium" },
+  { value: "low", label: "Low" },
+];
+
+export function CreateCasePanel({
+  open,
+  reservation,
+  classification,
+  caseType,
+  casePriority,
+  onCaseTypeChange,
+  onCasePriorityChange,
+  onClose,
+}: CreateCasePanelProps) {
   const [title, setTitle] = useState(() => `Access issue — ${reservation.listingName}`);
   const [description, setDescription] = useState(() => reservation.latestGuestMessage);
 
@@ -49,6 +76,47 @@ export function CreateCasePanel({ open, reservation, onClose }: CreateCasePanelP
           value={description}
           onChange={(event) => setDescription(event.target.value)}
         />
+
+        <span className="fieldLabel">Case type</span>
+        <div className="choiceRow" role="radiogroup" aria-label="Case type">
+          {CASE_TYPE_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={caseType === option.value}
+              className={caseType === option.value ? "choicePill choicePillActive" : "choicePill"}
+              onClick={() => onCaseTypeChange(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        <span className="fieldLabel">Priority</span>
+        <div className="choiceRow" role="radiogroup" aria-label="Priority">
+          {PRIORITY_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={casePriority === option.value}
+              className={casePriority === option.value ? "choicePill choicePillActive" : "choicePill"}
+              onClick={() => onCasePriorityChange(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="suggestionNote">
+          <p className="suggestionNoteTitle">Why we suggest this</p>
+          <ul>
+            {classification.reasoning.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
       </div>
     </aside>
   );
