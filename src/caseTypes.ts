@@ -30,3 +30,30 @@ export type Case = {
   priority: CasePriority;
   createdAt: string;
 };
+
+// Moved here from CreateCasePanel.tsx once the Open Cases card became a
+// second consumer of the same labels/pills — one real use case each, not
+// speculative sharing.
+export const CASE_TYPE_OPTIONS: { value: CaseType; label: string }[] = [
+  { value: "access_issue", label: "Access issue" },
+  { value: "general_issue", label: "General issue" },
+];
+
+export const PRIORITY_OPTIONS: { value: CasePriority; label: string }[] = [
+  { value: "urgent", label: "Urgent" },
+  { value: "high", label: "High" },
+  { value: "medium", label: "Medium" },
+  { value: "low", label: "Low" },
+];
+
+export function caseTypeLabel(type: CaseType): string {
+  return CASE_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
+}
+
+export function priorityLabel(priority: CasePriority): string {
+  return PRIORITY_OPTIONS.find((option) => option.value === priority)?.label ?? priority;
+}
+
+export function isHighUrgency(priority: CasePriority): boolean {
+  return priority === "urgent" || priority === "high";
+}

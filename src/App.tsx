@@ -4,7 +4,20 @@ import { CreateCasePanel } from "./components/CreateCasePanel";
 import { reservationContext } from "./mockData";
 import { deriveClassification } from "./classifyCase";
 import { useActionPlan } from "./hooks/useActionPlan";
+import type { ActionPlanState } from "./hooks/useActionPlan";
+import { caseTypeLabel, isHighUrgency, priorityLabel } from "./caseTypes";
 import type { Case, CasePriority, CaseType } from "./caseTypes";
+
+function actionPlanSummary(actionPlan: ActionPlanState): string {
+  if (actionPlan.status === "ready") {
+    const count = actionPlan.items.length;
+    return `${count} suggested action${count === 1 ? "" : "s"} ready`;
+  }
+  if (actionPlan.status === "error") {
+    return "Couldn't generate suggested actions";
+  }
+  return "Suggested actions generating…";
+}
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
@@ -157,7 +170,20 @@ export function App() {
             </Card>
 
             <Card title="Open cases">
-              <p className="emptyState">No open cases for this reservation.</p>
+              {createdCase ? (
+                <>
+                  <div className="titleRow">
+                    <strong>{createdCase.title}</strong>
+                    <span className="pill success">{caseTypeLabel(createdCase.type)}</span>
+                    <span className={isHighUrgency(createdCase.priority) ? "pill danger" : "pill success"}>
+                      {priorityLabel(createdCase.priority)}
+                    </span>
+                  </div>
+                  <p className="metaLine">{actionPlanSummary(actionPlan)}</p>
+                </>
+              ) : (
+                <p className="emptyState">No open cases for this reservation.</p>
+              )}
             </Card>
           </div>
         </div>

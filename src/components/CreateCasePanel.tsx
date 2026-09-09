@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReservationContext } from "../mockData";
 import type { Case, CasePriority, CaseType, Classification } from "../caseTypes";
+import { CASE_TYPE_OPTIONS, PRIORITY_OPTIONS, caseTypeLabel, isHighUrgency, priorityLabel } from "../caseTypes";
 import type { ActionPlanState } from "../hooks/useActionPlan";
 
 type CreateCasePanelProps = {
@@ -15,28 +16,6 @@ type CreateCasePanelProps = {
   onCreate: (details: { title: string; description: string }) => void;
   onClose: () => void;
 };
-
-const CASE_TYPE_OPTIONS: { value: CaseType; label: string }[] = [
-  { value: "access_issue", label: "Access issue" },
-  { value: "general_issue", label: "General issue" },
-];
-
-const PRIORITY_OPTIONS: { value: CasePriority; label: string }[] = [
-  { value: "urgent", label: "Urgent" },
-  { value: "high", label: "High" },
-  { value: "medium", label: "Medium" },
-  { value: "low", label: "Low" },
-];
-
-function caseTypeLabel(type: CaseType): string {
-  // Looked up from the same options the pills render, so the title prefill
-  // can never drift from what "Case type" actually shows as selected.
-  return CASE_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
-}
-
-function priorityLabel(priority: CasePriority): string {
-  return PRIORITY_OPTIONS.find((option) => option.value === priority)?.label ?? priority;
-}
 
 // Shared by the form view and the success view — both need to show the same
 // action-plan status, which is exactly the second use case that justifies
@@ -169,13 +148,7 @@ export function CreateCasePanel({
           <div className="titleRow">
             <h2>{createdCase.title}</h2>
             <span className="pill success">{caseTypeLabel(createdCase.type)}</span>
-            <span
-              className={
-                createdCase.priority === "urgent" || createdCase.priority === "high"
-                  ? "pill danger"
-                  : "pill success"
-              }
-            >
+            <span className={isHighUrgency(createdCase.priority) ? "pill danger" : "pill success"}>
               {priorityLabel(createdCase.priority)}
             </span>
           </div>
