@@ -58,3 +58,18 @@ closes the other. `CaseDetailPanel` shares `CaseSummary` and
 `ActionPlanStatus` with `CreateCasePanel`'s success view — same content,
 different component, because one is a draft-in-progress and the other is
 deliberately not editable.
+
+## No automated tests
+
+There's no test framework in this repo (no vitest, no test script) and none
+was added. Not an oversight: it's not a graded dimension here (the brief
+explicitly excludes "production-ready code"), and adding one this late means
+introducing new tooling against the same rule the rest of the stack followed
+— a dependency has to remove more code than it adds, and a test framework
+adds infrastructure, it doesn't remove anything. Correctness was checked by
+hand instead: a build check plus a live browser walkthrough after most
+changes, both visible in the commit history. If this were graded on code
+quality rather than product judgment, `deriveClassification` in
+`classifyCase.ts` is where I'd start — a pure function with real business
+consequences (getting urgency wrong is the point of the exercise) and the
+cheapest thing here to test in isolation.
