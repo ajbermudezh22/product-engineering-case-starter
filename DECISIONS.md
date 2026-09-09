@@ -18,3 +18,19 @@ at first, but they behave differently and are kept as two types:
 This split is what makes the "don't block case creation on generation"
 product bet coherent: the thing that's slow (action plan) is not the thing
 required to create the case (classification).
+
+## Only one case at a time (App.tsx, createdCase: Case | null)
+
+There's exactly one `useActionPlan` slot in the app. A second concurrent case
+would need its own independent action-plan tracking (a map keyed by case id)
+to avoid a second draft's key silently overwriting the first case's plan —
+real complexity the brief doesn't ask for (one urgent access issue, one
+case). So `createdCase` is singular, not a list, and reopening the panel
+after a case exists still reaches the create form again rather than getting
+stuck — but clicking "Create case" a second time **replaces** `createdCase`
+in App, it does not add a second one. Because `reservationId`/`caseType`/
+`casePriority` reset to the same deterministic suggestion every time
+(`openCasePanel()`), a replace only actually changes `id`/`createdAt`/
+`title`/`description` — the action plan itself doesn't restart, since its key
+is unchanged. No confirmation or guard against this exists; it's a named
+scope cut, not an oversight.

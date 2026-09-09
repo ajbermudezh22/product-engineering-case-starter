@@ -317,6 +317,10 @@ h2 {
   gap: 6px;
   align-content: start;
   overflow-y: auto;
+  /* Grid items default to min-height: auto, which lets content grow past
+     the 1fr track instead of scrolling inside it — without this, the
+     footer below would get pushed out of view instead of staying put. */
+  min-height: 0;
 }
 
 .fieldLabel {
@@ -417,6 +421,16 @@ h2 {
   padding-left: 18px;
   line-height: 1.7;
   font-size: 13px;
+}
+
+.casePanelFooter {
+  padding-top: 14px;
+  border-top: 1px solid #ece8df;
+}
+
+.casePanelFooter .primaryButton {
+  width: 100%;
+  text-align: center;
 }
 
 .accessCodeRow {
