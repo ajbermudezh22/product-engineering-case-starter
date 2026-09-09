@@ -145,4 +145,6 @@ Nothing here shipped without being read line by line.
 
 Done. Full write-up, requirements, flow, the design decisions I'd defend, evaluation plan, and what I'd ship first: [`docs/listing-optimization-agent.md`](docs/listing-optimization-agent.md).
 
-Diagram: [Excalidraw board](https://excalidraw.com/#json=wFVpSjvRmlwZiJ-H77ut0,XdZ9WevMuHs7-G2CkMjXJg) (live, editable) · [`docs/listing-optimization-agent.png`](docs/listing-optimization-agent.png) (static export, same content).
+Diagram: [Excalidraw board](https://excalidraw.com/#json=wFVpSjvRmlwZiJ-H77ut0,XdZ9WevMuHs7-G2CkMjXJg) (live, editable) — static export below.
+
+![Listing Optimization Agent diagram](docs/listing-optimization-agent.png)
