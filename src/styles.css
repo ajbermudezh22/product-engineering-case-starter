@@ -309,3 +309,45 @@ h2 {
   padding-left: 20px;
   line-height: 1.7;
 }
+
+/* create case panel — form */
+
+.caseForm {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  overflow-y: auto;
+}
+
+.fieldLabel {
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4b4f46;
+}
+
+.fieldLabel:first-child {
+  margin-top: 0;
+}
+
+.textInput,
+.textArea {
+  width: 100%;
+  border: 1px solid #d8d2c7;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: inherit;
+  color: #171a20;
+  background: #fffefb;
+}
+
+.textArea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.textInput:focus,
+.textArea:focus {
+  outline: 2px solid #171a20;
+  outline-offset: 1px;
+}

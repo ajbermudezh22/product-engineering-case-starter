@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { ReservationContext } from "../mockData";
 
 type CreateCasePanelProps = {
@@ -7,6 +8,9 @@ type CreateCasePanelProps = {
 };
 
 export function CreateCasePanel({ open, reservation, onClose }: CreateCasePanelProps) {
+  const [title, setTitle] = useState(() => `Access issue — ${reservation.listingName}`);
+  const [description, setDescription] = useState(() => reservation.latestGuestMessage);
+
   if (!open) {
     return null;
   }
@@ -16,29 +20,35 @@ export function CreateCasePanel({ open, reservation, onClose }: CreateCasePanelP
       <div className="casePanelHeader">
         <div>
           <p className="eyebrow">Create case</p>
-          <h2>Improve this flow</h2>
+          <h2>{reservation.guestName}</h2>
         </div>
         <button className="iconButton" type="button" onClick={onClose} aria-label="Close create case panel">
           ×
         </button>
       </div>
 
-      <div className="placeholderBlock">
-        <strong>Your task starts here.</strong>
-        <p>
-          Build the case creation interaction for {reservation.guestName}. Use the existing reservation context,
-          prefill what should be prefilled, and show the loading and success states.
-        </p>
-      </div>
+      <div className="caseForm">
+        <label className="fieldLabel" htmlFor="caseTitle">
+          Title
+        </label>
+        <input
+          id="caseTitle"
+          className="textInput"
+          type="text"
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+        />
 
-      <div className="todoList">
-        <p className="todoTitle">Suggested first slice</p>
-        <ul>
-          <li>Title and description with useful defaults</li>
-          <li>Case type and priority suggestion</li>
-          <li>Clear loading state while actions are generated</li>
-          <li>Success state after creation</li>
-        </ul>
+        <label className="fieldLabel" htmlFor="caseDescription">
+          Description
+        </label>
+        <textarea
+          id="caseDescription"
+          className="textArea"
+          rows={4}
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+        />
       </div>
     </aside>
   );
