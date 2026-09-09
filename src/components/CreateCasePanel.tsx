@@ -42,9 +42,13 @@ export function CreateCasePanel({
   onCasePriorityChange,
   onClose,
 }: CreateCasePanelProps) {
-  const [title, setTitle] = useState(
-    () => `${caseTypeLabel(classification.type)} — ${reservation.listingName}`
-  );
+  // Tracks the live case-type pill, not the frozen suggestion — otherwise
+  // switching the pill would leave a title that names the wrong type with no
+  // indication it's stale, worse than the reasoning block since there's
+  // nothing here to dim. Stops following once the agent types their own
+  // title; a manual edit is theirs, not something a pill click should erase.
+  const [title, setTitle] = useState(() => `${caseTypeLabel(caseType)} — ${reservation.listingName}`);
+  const [titleTouched, setTitleTouched] = useState(false);
   // Attributed as a quote rather than dropped in verbatim: this text is what
   // travels with the case once it exists independently of this reservation
   // page (no linked-message view is built in this prototype), so it needs to
@@ -56,6 +60,12 @@ export function CreateCasePanel({
   useEffect(() => {
     titleInputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (!titleTouched) {
+      setTitle(`${caseTypeLabel(caseType)} — ${reservation.listingName}`);
+    }
+  }, [caseType, reservation.listingName, titleTouched]);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -94,7 +104,10 @@ export function CreateCasePanel({
           className="textInput"
           type="text"
           value={title}
-          onChange={(event) => setTitle(event.target.value)}
+          onChange={(event) => {
+            setTitle(event.target.value);
+            setTitleTouched(true);
+          }}
         />
 
         <label className="fieldLabel" htmlFor="caseDescription">
