@@ -42,21 +42,12 @@ export function deriveClassification(reservation: ReservationContext): Classific
     );
   }
 
-  if (priority === "urgent" && reservation.recentMessageCount >= 3) {
-    reasoning.push(
-      `Guest sent ${reservation.recentMessageCount} messages in ${reservation.recentMessageWindowMinutes} minutes — a pace that reads as active distress, not a routine question.`
-    );
-  }
-
-  if (reservation.similarIssueNote) {
-    reasoning.push(`${reservation.similarIssueNote} Worth checking whether this is a recurring problem, not a one-off.`);
-  }
-
-  if (reservation.backupAccessAvailable) {
-    reasoning.push(
-      "A backup keybox exists for this unit — useful for whoever picks this up, though it doesn't lower urgency since the guest is stuck right now."
-    );
-  }
+  // Message frequency, the similar-issue note, and backup-access availability
+  // are all real signals, but none of them change type or priority above —
+  // they're appended as color, not reasoning. Left out on purpose: each one
+  // is already visible in the Access context card sitting right next to this
+  // panel, so repeating it here would only pad the list without explaining
+  // the suggestion. Reasoning stays limited to what actually drove the call.
 
   return { type, priority, reasoning };
 }
