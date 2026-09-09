@@ -45,3 +45,16 @@ be `"loading"` right there inside it — case creation never waits on
 generation (see the classification/action-plan split above). Both required
 states still exist, just not in that sequence, and that's the actual
 product bet, not an accident of build order.
+
+## One side-panel slot, not two (App.tsx, CaseDetailPanel)
+
+Once a case can be viewed again after creation (the "View details" link on
+the Open Cases row), there are two different side panels the app can show —
+the create flow and the read-only case detail view — but `.appShell.
+panelOpen` only reserves room for one 420px column. Rather than adding
+overlay/stacking logic for a second panel, `casePanelOpen` and
+`caseDetailOpen` are kept mutually exclusive: opening either one explicitly
+closes the other. `CaseDetailPanel` shares `CaseSummary` and
+`ActionPlanStatus` with `CreateCasePanel`'s success view — same content,
+different component, because one is a draft-in-progress and the other is
+deliberately not editable.
